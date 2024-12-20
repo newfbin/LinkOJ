@@ -4,6 +4,7 @@ import accessEnum from "@/access/accessEnum";
 import UserLayout from "@/layouts/UserLayout.vue";
 import UserLoginView from "@/views/user/UserLoginView.vue";
 import UserRegisterView from "@/views/user/UserRegisterView.vue";
+import AccessEnum from "@/access/accessEnum";
 
 export const routes: Array<RouteRecordRaw> = [
   {
@@ -43,9 +44,9 @@ export const routes: Array<RouteRecordRaw> = [
     path: "/update/question",
     name: "更新题目",
     component: () => import("../views/question/AddQuestionView.vue"),
-    // meta: {
-    //   access: AccessEnum.ADMIN,
-    // },
+    meta: {
+      hideInMenu: true,
+    },
   },
   {
     path: "/manage/question",
@@ -56,9 +57,19 @@ export const routes: Array<RouteRecordRaw> = [
     // },
   },
   {
+    path: "/view/question/:id",
+    name: "在线做题",
+    component: () => import("../views/question/ViewQuestionsView.vue"),
+    props: true,
+    meta: {
+      access: AccessEnum.ADMIN,
+      hideInMenu: true,
+    },
+  },
+  {
     path: "/",
-    name: "浏览题目",
-    component: HomeView,
+    name: "主页",
+    component: () => import("../views/question/QuestionsView.vue"),
   },
   // {
   //   path: "/hide",
@@ -72,6 +83,9 @@ export const routes: Array<RouteRecordRaw> = [
     path: "/noAuth",
     name: "无权限",
     component: () => import("../views/NoAuthView.vue"),
+    meta: {
+      hideInMenu: true,
+    },
   },
   // {
   //   path: "/admin",

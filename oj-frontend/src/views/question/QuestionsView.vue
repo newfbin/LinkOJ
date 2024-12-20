@@ -1,25 +1,28 @@
 <template>
   <div id="questionsView">
+    <!--    <h2>题目浏览</h2>-->
     <a-form :model="searchParams" layout="inline">
       <a-form-item field="title" label="名称" style="min-width: 240px">
-        <a-input v-model="searchParams.title" placeholder="请输入名称" />
+        <a-input v-model="searchParams.title" placeholder="请输入题目名称" />
       </a-form-item>
       <a-form-item field="tags" label="标签" style="min-width: 240px">
-        <a-input-tag v-model="searchParams.tags" placeholder="请输入标签" />
+        <a-input-tag
+          v-model="searchParams.tags"
+          placeholder="输入标签名并按Enter"
+        />
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" @click="doSubmit">提交</a-button>
+        <a-button type="primary" @click="doSearch">搜索</a-button>
       </a-form-item>
     </a-form>
     <a-divider size="0" />
     <a-table
-      :ref="tableRef"
       :columns="columns"
       :data="dataList"
       :pagination="{
-        showTotal: true,
         pageSize: searchParams.pageSize,
-        current: searchParams.current,
+        pageNum: searchParams.current,
+        showTotal: true,
         total,
       }"
       @page-change="onPageChange"
@@ -33,18 +36,19 @@
       </template>
       <template #acceptedRate="{ record }">
         {{
-          `${
-            record.submitNum ? record.acceptedNum / record.submitNum : "0"
-          }% (${record.acceptedNum}/${record.submitNum})`
+          `${record.submitNum ? record.acceptedNum / record.submitNum : 0} (${
+            record.acceptedNum
+          }/${record.submitNum})`
         }}
       </template>
       <template #createTime="{ record }">
         {{ moment(record.createTime).format("YYYY-MM-DD") }}
       </template>
+
       <template #optional="{ record }">
         <a-space>
-          <a-button type="primary" @click="toQuestionPage(record)">
-            做题
+          <a-button type="primary" @click="toQuestionPage(record)"
+            >做题
           </a-button>
         </a-space>
       </template>
@@ -54,28 +58,20 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watchEffect } from "vue";
-import {
-  Page_Question_,
-  Question,
-  QuestionControllerService,
-  QuestionQueryRequest,
-} from "../../../generated";
-import message from "@arco-design/web-vue/es/message";
-import * as querystring from "querystring";
+import { Question, QuestionControllerService } from "../../../generated";
+import { Message } from "@arco-design/web-vue";
 import { useRouter } from "vue-router";
 import moment from "moment";
 
-const tableRef = ref();
-
+const router = useRouter();
 const dataList = ref([]);
 const total = ref(0);
-const searchParams = ref<QuestionQueryRequest>({
+const searchParams = ref({
   title: "",
   tags: [],
-  pageSize: 8,
+  pageSize: 10,
   current: 1,
 });
-
 const loadData = async () => {
   const res = await QuestionControllerService.listQuestionVoByPageUsingPost(
     searchParams.value
@@ -84,26 +80,23 @@ const loadData = async () => {
     dataList.value = res.data.records;
     total.value = res.data.total;
   } else {
-    message.error("加载失败，" + res.message);
+    Message.error("加载失败" + res.message);
   }
 };
+const show = ref(true);
 
 /**
+ * 挂载阶段回调函数执行一次
  * 监听 searchParams 变量，改变时触发页面的重新加载
+ * watchEffect的套路是：不用指明监视哪个属性，监视的回调中用到哪个属性，那就监视哪个属性。
  */
 watchEffect(() => {
   loadData();
 });
 
-/**
- * 页面加载时，请求数据
- */
-onMounted(() => {
-  loadData();
-});
-
-// {id: "1", title: "A+ D", content: "新的题目内容", tags: "["二叉树"]", answer: "新的答案", submitNum: 0,…}
-
+// onMounted(() => {
+//   loadData();
+// });
 const columns = [
   {
     title: "题号",
@@ -129,38 +122,26 @@ const columns = [
     slotName: "optional",
   },
 ];
-
 const onPageChange = (page: number) => {
   searchParams.value = {
     ...searchParams.value,
     current: page,
   };
 };
-
-const router = useRouter();
-
-/**
- * 跳转到做题页面
- * @param question
- */
 const toQuestionPage = (question: Question) => {
   router.push({
     path: `/view/question/${question.id}`,
   });
 };
-
-/**
- * 确认搜索，重新加载数据
- */
-const doSubmit = () => {
-  // 这里需要重置搜索页号
+const doSearch = () => {
+  //因为searchParams改变会自动触发loadData函数，因此不需要手动触发
+  //要把current重置为1，不然当页号不为1时，搜索题目可能会搜索不出来
   searchParams.value = {
     ...searchParams.value,
     current: 1,
   };
 };
 </script>
-
 <style scoped>
 #questionsView {
   max-width: 1280px;

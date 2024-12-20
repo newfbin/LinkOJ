@@ -9,7 +9,6 @@
   </div>
 </template>
 
-<style></style>
 <script setup lang="ts">
 import BasicLayout from "@/layouts/BasicLayout.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -50,3 +49,9 @@ onMounted(() => {
   doInit();
 });
 </script>
+
+<style>
+.arco-space-item {
+  margin-bottom: 0 !important;
+}
+</style>
