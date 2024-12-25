@@ -101,3 +101,7 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.newfbin.linkoj.controller
+
+#自定义配置：代码沙箱类型
+codesandbox:
+  type: example

@@ -2,7 +2,7 @@ package com.newfbin.linkoj.model.vo;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.newfbin.linkoj.model.dto.questionsubmit.JudgeInfo;
+import com.newfbin.linkoj.judge.codesandbox.model.JudgeInfo;
 import com.newfbin.linkoj.model.entity.QuestionSubmit;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

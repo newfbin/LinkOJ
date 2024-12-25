@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.newfbin.linkoj.common.ErrorCode;
 import com.newfbin.linkoj.constant.CommonConstant;
 import com.newfbin.linkoj.exception.BusinessException;
+import com.newfbin.linkoj.judge.JudgeService;
 import com.newfbin.linkoj.mapper.QuestionSubmitMapper;
 import com.newfbin.linkoj.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.newfbin.linkoj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
@@ -23,6 +24,7 @@ import com.newfbin.linkoj.service.QuestionSubmitService;
 import com.newfbin.linkoj.service.UserService;
 import com.newfbin.linkoj.utils.SqlUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -47,10 +50,14 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     @Resource
     private UserService userService;
 
+    @Resource
+    @Lazy
+    private JudgeService judgeService;
+
     /**
      * 提交题目
      *
-     * @param questionId
+     * @param questionSubmitAddRequest
      * @param loginUser
      * @return
      */
@@ -84,9 +91,13 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据插入失败");
         }
+        Long questionSubmitId = questionSubmit.getId();
+        // 执行判题服务
+        CompletableFuture.runAsync(() -> {
+            judgeService.doJudge(questionSubmitId);
+        });
         return questionSubmit.getId();
     }
-
 
     /**
      * 获取查询包装类（用户根据哪些字段查询，根据前端传来的请求对象，得到mybatis支持的查询queryWrapper类）

@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: codesandbox
+
+server:
+  port: 8090
