@@ -4,6 +4,7 @@ import accessEnum from "@/access/accessEnum";
 import UserLayout from "@/layouts/UserLayout.vue";
 import UserLoginView from "@/views/user/UserLoginView.vue";
 import UserRegisterView from "@/views/user/UserRegisterView.vue";
+import QuestionSubmitView from "@/views/question/QuestionSubmitView.vue";
 import AccessEnum from "@/access/accessEnum";
 
 export const routes: Array<RouteRecordRaw> = [
@@ -65,6 +66,11 @@ export const routes: Array<RouteRecordRaw> = [
       access: AccessEnum.ADMIN,
       hideInMenu: true,
     },
+  },
+  {
+    path: "/question_submit",
+    name: "浏览题目提交",
+    component: QuestionSubmitView,
   },
   {
     path: "/",

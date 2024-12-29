@@ -11,10 +11,15 @@ import com.newfbin.linkoj.constant.UserConstant;
 import com.newfbin.linkoj.exception.BusinessException;
 import com.newfbin.linkoj.exception.ThrowUtils;
 import com.newfbin.linkoj.model.dto.question.*;
+import com.newfbin.linkoj.model.dto.questionsubmit.QuestionSubmitAddRequest;
+import com.newfbin.linkoj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.newfbin.linkoj.model.entity.Question;
+import com.newfbin.linkoj.model.entity.QuestionSubmit;
 import com.newfbin.linkoj.model.entity.User;
+import com.newfbin.linkoj.model.vo.QuestionSubmitVO;
 import com.newfbin.linkoj.model.vo.QuestionVO;
 import com.newfbin.linkoj.service.QuestionService;
+import com.newfbin.linkoj.service.QuestionSubmitService;
 import com.newfbin.linkoj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +46,9 @@ public class QuestionController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private QuestionSubmitService questionSubmitService;
+
     // region 增删改查
 
     /**
@@ -59,12 +67,12 @@ public class QuestionController {
         BeanUtils.copyProperties(questionAddRequest, question);
 
         List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
-        if(judgeCase != null){
-            question.setJudgeConfig(JSONUtil.toJsonStr(judgeCase));
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
 
         JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
-        if(judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
 
@@ -124,12 +132,12 @@ public class QuestionController {
         BeanUtils.copyProperties(questionUpdateRequest, question);
 
         List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
-        if(judgeCase != null){
+        if (judgeCase != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeCase));
         }
 
         JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
-        if(judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
 
@@ -245,12 +253,12 @@ public class QuestionController {
         List<String> tags = questionEditRequest.getTags();
 
         List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
-        if(judgeCase != null){
+        if (judgeCase != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeCase));
         }
 
         JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
-        if(judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
 
@@ -271,5 +279,44 @@ public class QuestionController {
         boolean result = questionService.updateById(question);
         return ResultUtils.success(result);
     }
+
+    //region 题目提交
+
+    /**
+     * 提交题目
+     *
+     * @param questionSubmitAddRequest
+     * @param request
+     * @return 提交记录的id
+     */
+    @PostMapping("/question_submit/do")
+    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
+                                               HttpServletRequest request) {
+        if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        final User loginUser = userService.getLoginUser(request);
+        long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
+        return ResultUtils.success(questionSubmitId);
+    }
+
+    /**
+     * 分页获取列表（除了管理员，其他用户不能看到答案、提交代码等非公开信息）
+     *
+     * @param questionSubmitQueryRequest
+     * @return
+     */
+    @PostMapping("/question_submit/list/page")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest, HttpServletRequest request) {
+        long current = questionSubmitQueryRequest.getCurrent();
+        long size = questionSubmitQueryRequest.getPageSize();
+        //从数据库查询原始题目提交分页信息。
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
+                questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
+    }
+    //endRegion
 
 }

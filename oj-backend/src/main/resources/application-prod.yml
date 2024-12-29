@@ -18,7 +18,7 @@ spring:
     host: localhost
     port: 6379
     timeout: 5000
-    password: 123456
+#    password: 123456 # 我电脑上的redis未设置密码，请不要开启密码配置，否则会出现：Unable to connect to 127.0.0.1/<unresolved>:6379错误
   # Elasticsearch 配置
   # todo 需替换配置
   elasticsearch:

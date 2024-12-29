@@ -4,3 +4,7 @@ spring:
 
 server:
   port: 8090
+
+#docker:
+#  host: tcp://192.168.1.17:2375
+#  api-version: 1.41
