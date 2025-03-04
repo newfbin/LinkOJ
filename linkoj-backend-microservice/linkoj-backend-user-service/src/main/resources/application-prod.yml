@@ -2,7 +2,7 @@
 
 spring:
   application:
-    name: linkoj-backend-question-service
+    name: linkoj-backend-user-service
   # 默认 dev 环境
   profiles:
     active: dev
@@ -20,17 +20,17 @@ spring:
   # todo 需替换配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/07_link_oj?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+    url: jdbc:mysql://mysql:3306/07_link_oj?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
     username: root
     password: 123456
   # Redis 配置
   # todo 需替换配置，然后取消注释
   redis:
     database: 1
-    host: localhost
+    host: redis
     port: 6379
     timeout: 5000
-#    password: 123456 # 我电脑上的redis未设置密码，请不要开启密码配置，否则会出现：Unable to connect to 127.0.0.1/<unresolved>:6379错误
+  #    password: 123456 # 我电脑上的redis未设置密码，请不要开启密码配置，否则会出现：Unable to connect to 127.0.0.1/<unresolved>:6379错误
   # Elasticsearch 配置
   # todo 需替换配置，然后取消注释
   # 文件上传
@@ -41,17 +41,12 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848
-  rabbitmq:
-    host: localhost
-    port: 5672
-    password: guest
-    username: guest
+        server-addr: nacos:8848
 server:
   address: 0.0.0.0
-  port: 8103
+  port: 8102
   servlet:
-    context-path: /api/question
+    context-path: /api/user
     # cookie 30 天过期
     session:
       cookie:
